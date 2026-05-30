@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>STORE SAPI - Control de Almacén</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Gestión de inventario móvil-primero para almacén de construcción. Rápido, funcional y con sincronización en tiempo real.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='orange'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+  
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="loader"></div>
+    <p>Conectando con STORE SAPI...</p>
+  </div>
+
+  <!-- Login Section -->
+  <section id="login-section" class="login-section hidden">
+    <div class="login-card">
+      <div class="login-logo">
+        <i data-lucide="hard-hat" class="logo-icon"></i>
+        <h1>STORE SAPI</h1>
+        <p>Control de Almacén e Inventario</p>
+      </div>
+      <div class="login-content">
+        <p class="login-intro">Acceso seguro para operadores de obra y personal de control de inventario.</p>
+        <button id="google-login-btn" class="btn btn-google">
+          <svg class="google-icon" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          Iniciar sesión con Google
+        </button>
+      </div>
+      <div class="login-footer">
+        <p>&copy; 2026 STORE SAPI. Diseñado para construcción.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main App Shell (Single Page Application) -->
+  <section id="app-shell" class="app-shell hidden">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <i data-lucide="hard-hat" class="brand-icon"></i>
+        <span class="brand-title">STORE SAPI</span>
+      </div>
+      <div class="header-user">
+        <img id="user-photo" src="" alt="Avatar" class="user-avatar" referrerPolicy="no-referrer">
+        <div class="user-info">
+          <span id="user-name" class="user-name">Operador</span>
+          <span id="user-email" class="user-role">Cargando...</span>
+        </div>
+        <button id="logout-btn" class="btn-icon" title="Cerrar sesión">
+          <i data-lucide="log-out"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="app-main">
+      <!-- VIEW: Dashboard -->
+      <div id="view-dashboard" class="app-view">
+        <div class="view-header">
+          <h2>Panel de Control</h2>
+          <p>Vista general y métricas del almacén</p>
+        </div>
+
+        <!-- Dashboard Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card premium-gradient">
+            <div class="metric-icon">
+              <i data-lucide="trending-up"></i>
+            </div>
+            <div class="metric-data">
+              <h3>Recaudo Mensual</h3>
+              <span id="metric-monthly-sales" class="metric-value">$0.00</span>
+              <p class="metric-sub">Ventas del mes actual</p>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon alert">
+              <i data-lucide="alert-triangle"></i>
+            </div>
+            <div class="metric-data">
+              <h3>Alertas de Stock</h3>
+              <span id="metric-alerts-count" class="metric-value">0</span>
+              <p class="metric-sub">Productos bajo el mínimo (1)</p>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon info">
+              <i data-lucide="boxes"></i>
+            </div>
+            <div class="metric-data">
+              <h3>Total Catálogo</h3>
+              <span id="metric-products-count" class="metric-value">0</span>
+              <p class="metric-sub">Tipos de productos en almacén</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Panel -->
+        <div class="quick-actions-section">
+          <h3>Operaciones Rápidas</h3>
+          <div class="quick-actions-grid">
+            <button id="btn-quick-sale" class="btn btn-action-sale">
+              <i data-lucide="shopping-cart"></i>
+              <span>Venta Rápida</span>
+            </button>
+            <button id="btn-quick-consumption" class="btn btn-action-consumption">
+              <i data-lucide="wrench"></i>
+              <span>Consumo Interno</span>
+            </button>
+            <button id="btn-quick-entry" class="btn btn-action-entry">
+              <i data-lucide="download"></i>
+              <span>Ingresar Stock</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Alerts List -->
+        <div class="alerts-section">
+          <div class="section-header">
+            <h3>Alarmas de Stock Bajo</h3>
+            <span class="badge badge-alert">Urgente</span>
+          </div>
+          <div id="dashboard-alerts-list" class="alerts-list">
+            <div class="empty-state">
+              <i data-lucide="check-circle" class="empty-icon text-success"></i>
+              <p>Todo el inventario está en niveles óptimos.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: Inventario (Productos) -->
+      <div id="view-inventory" class="app-view hidden">
+        <div class="view-header-with-action">
+          <div class="view-header">
+            <h2>Catálogo de Productos</h2>
+            <p>Listado de materiales de construcción y herramientas</p>
+          </div>
+          <button id="btn-add-product" class="btn btn-primary">
+            <i data-lucide="plus"></i>
+            <span>Nuevo Producto</span>
+          </button>
+        </div>
+
+        <!-- Search and Filter Bar -->
+        <div class="filter-bar">
+          <div class="search-input-wrapper">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="inventory-search" placeholder="Buscar por nombre o categoría...">
+          </div>
+          <select id="inventory-filter-category" class="filter-select">
+            <option value="all">Todas las Categorías</option>
+            <option value="Cemento">Cemento</option>
+            <option value="Fierro">Fierro</option>
+            <option value="Agregados">Agregados</option>
+            <option value="Herramientas">Herramientas</option>
+            <option value="Otros">Otros</option>
+          </select>
+        </div>
+
+        <!-- Products Grid -->
+        <div id="products-container" class="products-grid">
+          <!-- Dinámicamente renderizado -->
+        </div>
+      </div>
+
+      <!-- VIEW: Movimientos (Historial de Transacciones) -->
+      <div id="view-movements" class="app-view hidden">
+        <div class="view-header">
+          <h2>Registro de Auditoría</h2>
+          <p>Historial de todas las operaciones y transacciones del almacén</p>
+        </div>
+
+        <!-- Movements Navigation Filters -->
+        <div class="movements-nav">
+          <button class="movement-nav-tab active" data-filter="all">Todos</button>
+          <button class="movement-nav-tab" data-filter="sale">Ventas</button>
+          <button class="movement-nav-tab" data-filter="consumption">Consumo Interno</button>
+          <button class="movement-nav-tab" data-filter="entry">Ingresos</button>
+        </div>
+
+        <!-- Filter bar for movements -->
+        <div class="filter-bar">
+          <div class="search-input-wrapper">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="movements-search" placeholder="Buscar por producto, operador, cliente o equipo...">
+          </div>
+        </div>
+
+        <!-- Movements List -->
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha / Hora</th>
+                <th>Producto</th>
+                <th>Tipo</th>
+                <th>Cant.</th>
+                <th>P. Unitario</th>
+                <th>Monto Total</th>
+                <th>Operador</th>
+                <th>Equipo / Dispositivo</th>
+              </tr>
+            </thead>
+            <tbody id="movements-table-body">
+              <!-- Dinámicamente renderizado -->
+            </tbody>
+          </table>
+          <div id="movements-empty-state" class="empty-state hidden">
+            <i data-lucide="receipt" class="empty-icon"></i>
+            <p>No se encontraron movimientos registrados en esta categoría.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation Bar (Mobile Native Style) -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-view="dashboard">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-view="inventory">
+        <i data-lucide="boxes"></i>
+        <span>Inventario</span>
+      </button>
+      <button class="nav-item" data-view="movements">
+        <i data-lucide="history"></i>
+        <span>Historial</span>
+      </button>
+    </nav>
+  </section>
+
+  <!-- MODAL: Crear/Editar Producto -->
+  <div id="modal-product" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-product-title">Nuevo Producto</h3>
+        <button class="btn-close-modal"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-product" class="modal-form">
+        <input type="hidden" id="product-id">
+        
+        <div class="form-group">
+          <label for="product-name">Nombre del Producto</label>
+          <input type="text" id="product-name" placeholder="Ej. Cemento Sol Bolsa 42.5kg" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="product-category">Categoría</label>
+            <select id="product-category" required>
+              <option value="Cemento">Cemento</option>
+              <option value="Fierro">Fierro</option>
+              <option value="Agregados">Agregados</option>
+              <option value="Herramientas">Herramientas</option>
+              <option value="Otros">Otros</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="product-unit">Unidad de Medida</label>
+            <input type="text" id="product-unit" placeholder="Ej. Bolsas, Varillas, m3" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="product-base-price">Precio Base ($)</label>
+            <input type="number" id="product-base-price" step="0.01" min="0" placeholder="0.00" required>
+          </div>
+          <div class="form-group">
+            <label for="product-min-alarm">Alerta Stock Mínimo</label>
+            <input type="number" id="product-min-alarm" min="0" value="1" placeholder="1" required>
+          </div>
+        </div>
+
+        <div id="product-initial-stock-group" class="form-group">
+          <label for="product-initial-stock">Stock Inicial</label>
+          <input type="number" id="product-initial-stock" min="0" value="0">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Registrar Movimiento (Ingreso, Venta, Consumo) -->
+  <div id="modal-movement" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-movement-title">Registrar Movimiento</h3>
+        <button class="btn-close-modal"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-movement" class="modal-form">
+        <input type="hidden" id="movement-type">
+        
+        <div class="form-group">
+          <label for="movement-product-id">Seleccionar Producto</label>
+          <select id="movement-product-id" required>
+            <option value="" disabled selected>-- Elige un producto --</option>
+            <!-- Opciones cargadas dinámicamente -->
+          </select>
+        </div>
+
+        <!-- Info current stock -->
+        <div id="movement-stock-info" class="stock-info-banner hidden">
+          <span>Stock actual disponible: <strong id="current-stock-badge">0</strong> <span id="current-unit-badge"></span></span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="movement-quantity">Cantidad</label>
+            <input type="number" id="movement-quantity" min="1" placeholder="1" required>
+          </div>
+          <div id="movement-price-group" class="form-group">
+            <label for="movement-price">Precio Unitario ($)</label>
+            <input type="number" id="movement-price" step="0.01" min="0" placeholder="0.00">
+          </div>
+        </div>
+
+        <!-- Dynamic inputs depending on transaction type -->
+        <div id="movement-details-group" class="form-group">
+          <label id="movement-details-label" for="movement-details-input">Cliente / Destino</label>
+          <input type="text" id="movement-details-input" placeholder="Detalles de la operación...">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" id="btn-submit-movement" class="btn btn-primary">Registrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Main App Logic Módulo ESM -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
