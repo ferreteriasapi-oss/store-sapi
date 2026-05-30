@@ -426,6 +426,37 @@
     </div>
   </div>
 
+  <!-- MODAL: Detalle de Movimientos por Producto -->
+  <div id="modal-product-movements" class="modal-overlay hidden">
+    <div class="modal-card modal-card-lg">
+      <div class="modal-header">
+        <h3 id="modal-pm-title">Movimientos del Producto</h3>
+        <button class="btn-close-modal" onclick="document.getElementById('modal-product-movements').classList.add('hidden')"><i data-lucide="x"></i></button>
+      </div>
+      <div class="pm-summary-bar">
+        <div class="pm-stat">
+          <span class="pm-stat-label">Stock Actual</span>
+          <span id="pm-stock" class="pm-stat-value">0</span>
+        </div>
+        <div class="pm-stat">
+          <span class="pm-stat-label">Total Entradas</span>
+          <span id="pm-entries" class="pm-stat-value pm-entry-color">0</span>
+        </div>
+        <div class="pm-stat">
+          <span class="pm-stat-label">Total Salidas</span>
+          <span id="pm-exits" class="pm-stat-value pm-exit-color">0</span>
+        </div>
+        <div class="pm-stat">
+          <span class="pm-stat-label">Operaciones</span>
+          <span id="pm-count" class="pm-stat-value">0</span>
+        </div>
+      </div>
+      <div class="pm-movements-list" id="pm-movements-list">
+        <!-- Dynamically rendered -->
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification System -->
   <div id="toast-container" class="toast-container"></div>
 

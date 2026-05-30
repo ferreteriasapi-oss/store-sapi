@@ -156,15 +156,30 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function checkUserAuthorization(email) {
+  const normalizedEmail = email.toLowerCase();
+  
+  // Hardcoded master admin fallback to guarantee access and self-healing
+  if (normalizedEmail === 'ferreteriasapi@gmail.com') {
+    try {
+      await setDoc(doc(db, "authorizedUsers", normalizedEmail), {
+        email: normalizedEmail,
+        role: "admin"
+      });
+    } catch(e) {
+      console.error("Master admin auto-register error", e);
+    }
+    return { email: normalizedEmail, role: "admin" };
+  }
+
   try {
-    const userDocRef = doc(db, "authorizedUsers", email.toLowerCase());
-    const userDoc = await getDoc(userDocRef);
-    if (userDoc.exists()) {
-      return userDoc.data();
+    const userDocRef = doc(db, "authorizedUsers", normalizedEmail);
+    const userDocSnap = await getDoc(userDocRef);
+    if (userDocSnap.exists()) {
+      return userDocSnap.data();
     }
     return false;
-  } catch (e) {
-    console.error("Auth check error", e);
+  } catch (error) {
+    console.error("Error validando usuario:", error);
     return false;
   }
 }
@@ -372,6 +387,9 @@ function renderProductCard(product) {
       <button class="btn btn-secondary btn-edit-product" data-id="${product.id}">
         <i data-lucide="edit-3"></i> Editar
       </button>
+      <button class="btn btn-secondary btn-view-movements" data-id="${product.id}" style="padding: 10px;">
+        <i data-lucide="bar-chart-3"></i> Movimientos
+      </button>
       <button class="btn btn-secondary btn-action-entry" data-id="${product.id}" style="padding: 10px;">
         <i data-lucide="plus"></i> Ingreso
       </button>
@@ -385,10 +403,105 @@ function renderProductCard(product) {
     openProductModal(product);
   });
 
+  // View movements detail listener
+  card.querySelector(".btn-view-movements").addEventListener("click", () => {
+    openProductMovementsModal(product.id);
+  });
+
   // Action entry shortcut listener
   card.querySelector(".btn-action-entry").addEventListener("click", () => {
     openMovementModal("entry", product.id);
   });
+}
+
+// Open Product Movements Detail Modal
+function openProductMovementsModal(productId) {
+  const product = productsMap.get(productId);
+  if (!product) return;
+
+  const modal = document.getElementById('modal-product-movements');
+  const titleEl = document.getElementById('modal-pm-title');
+  const stockEl = document.getElementById('pm-stock');
+  const entriesEl = document.getElementById('pm-entries');
+  const exitsEl = document.getElementById('pm-exits');
+  const countEl = document.getElementById('pm-count');
+  const listEl = document.getElementById('pm-movements-list');
+
+  // Filter movements for this product
+  const productMovements = allMovements.filter(m => m.productId === productId);
+
+  // Calculate stats
+  let totalEntries = 0;
+  let totalExits = 0;
+  productMovements.forEach(m => {
+    if (m.type === 'entry') totalEntries += m.quantity;
+    else totalExits += m.quantity;
+  });
+
+  titleEl.textContent = `Movimientos: ${product.name}`;
+  stockEl.textContent = `${product.stock} ${product.unit}`;
+  entriesEl.textContent = totalEntries;
+  exitsEl.textContent = totalExits;
+  countEl.textContent = productMovements.length;
+
+  // Render movement items
+  listEl.innerHTML = '';
+
+  if (productMovements.length === 0) {
+    listEl.innerHTML = `
+      <div class="pm-empty-state">
+        <i data-lucide="inbox"></i>
+        <p>No hay movimientos registrados para este producto.</p>
+      </div>
+    `;
+  } else {
+    productMovements.forEach(m => {
+      const item = document.createElement('div');
+      item.className = 'pm-movement-item';
+
+      let iconClass = 'type-entry';
+      let iconName = 'download';
+      let typeLabel = 'Ingreso';
+      let qtyClass = 'pm-qty-positive';
+      let qtyPrefix = '+';
+
+      if (m.type === 'sale') {
+        iconClass = 'type-sale';
+        iconName = 'shopping-cart';
+        typeLabel = 'Venta';
+        qtyClass = 'pm-qty-negative';
+        qtyPrefix = '-';
+      } else if (m.type === 'consumption') {
+        iconClass = 'type-consumption';
+        iconName = 'wrench';
+        typeLabel = 'Consumo';
+        qtyClass = 'pm-qty-negative';
+        qtyPrefix = '-';
+      }
+
+      const opName = m.operator ? m.operator.name : 'Desconocido';
+      const detail = m.details && m.details.client ? ` · ${m.details.client}` : '';
+      const priceStr = m.price ? `$${(m.quantity * m.price).toFixed(2)}` : '';
+
+      item.innerHTML = `
+        <div class="pm-movement-icon ${iconClass}">
+          <i data-lucide="${iconName}" style="width:20px;height:20px;"></i>
+        </div>
+        <div class="pm-movement-body">
+          <div class="pm-type-label">${typeLabel}${detail}</div>
+          <div class="pm-detail">${formatDate(m.timestamp)} · ${opName}</div>
+        </div>
+        <div class="pm-movement-right">
+          <div class="pm-qty ${qtyClass}">${qtyPrefix}${m.quantity} ${product.unit}</div>
+          ${priceStr ? `<div class="pm-price">${priceStr}</div>` : ''}
+        </div>
+      `;
+      listEl.appendChild(item);
+    });
+  }
+
+  modal.classList.remove('hidden');
+  lucide.createIcons();
 }
 
 inventorySearch.addEventListener("input", filterProducts);
