@@ -235,6 +235,38 @@
           </div>
         </div>
       </div>
+      <!-- VIEW: Admin (Control de Accesos) -->
+      <div id="view-admin" class="app-view hidden">
+        <div class="view-header-with-action">
+          <div class="view-header">
+            <h2>Gestión de Accesos</h2>
+            <p>Panel de administración de usuarios autorizados</p>
+          </div>
+          <button id="btn-add-user" class="btn btn-primary">
+            <i data-lucide="user-plus"></i>
+            <span>Nuevo Acceso</span>
+          </button>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Correo Electrónico</th>
+                <th>Rol</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body">
+              <!-- Dinámicamente renderizado -->
+            </tbody>
+          </table>
+          <div id="users-empty-state" class="empty-state hidden">
+            <i data-lucide="users" class="empty-icon"></i>
+            <p>No hay usuarios autorizados (se requiere al menos un administrador).</p>
+          </div>
+        </div>
+      </div>
     </main>
 
     <!-- Bottom Navigation Bar (Mobile Native Style) -->
@@ -250,6 +282,10 @@
       <button class="nav-item" data-view="movements">
         <i data-lucide="history"></i>
         <span>Historial</span>
+      </button>
+      <button id="nav-admin" class="nav-item hidden" data-view="admin">
+        <i data-lucide="shield"></i>
+        <span>Admin</span>
       </button>
     </nav>
   </section>
@@ -353,6 +389,33 @@
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary btn-close-modal">Cancelar</button>
           <button type="submit" id="btn-submit-movement" class="btn btn-primary">Registrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Crear Acceso (Admin) -->
+  <div id="modal-user" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-user-title">Agregar Usuario</h3>
+        <button class="btn-close-modal"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-user" class="modal-form">
+        <div class="form-group">
+          <label for="user-email-input">Correo de Google</label>
+          <input type="email" id="user-email-input" placeholder="ejemplo@gmail.com" required>
+        </div>
+        <div class="form-group">
+          <label for="user-role-select">Rol en el Sistema</label>
+          <select id="user-role-select" required>
+            <option value="operador">Operador (Dashboard, Inventario, Movimientos)</option>
+            <option value="admin">Administrador (Acceso Total)</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Autorizar</button>
         </div>
       </form>
     </div>

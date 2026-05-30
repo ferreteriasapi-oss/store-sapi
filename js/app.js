@@ -14,7 +14,10 @@ import {
   query, 
   orderBy, 
   runTransaction,
-  serverTimestamp 
+  serverTimestamp,
+  getDoc,
+  getDocs,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ==========================================================================
@@ -39,6 +42,16 @@ const userPhotoEl = document.getElementById("user-photo");
 
 const navItems = document.querySelectorAll(".nav-item");
 const appViews = document.querySelectorAll(".app-view");
+const navAdminBtn = document.getElementById("nav-admin");
+
+// Admin Panel Elements
+const usersTableBody = document.getElementById("users-table-body");
+const usersEmptyState = document.getElementById("users-empty-state");
+const btnAddUser = document.getElementById("btn-add-user");
+const modalUser = document.getElementById("modal-user");
+const formUser = document.getElementById("form-user");
+const userEmailInput = document.getElementById("user-email-input");
+const userRoleSelect = document.getElementById("user-role-select");
 
 // Dashboard metrics
 const metricMonthlySales = document.getElementById("metric-monthly-sales");
@@ -93,8 +106,23 @@ const closeModalButtons = document.querySelectorAll(".btn-close-modal");
 // ==========================================================================
 
 // Check Auth State
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
+    loadingOverlay.classList.remove("hidden");
+    
+    // Seed admin users if collection is empty
+    await seedInitialUsers();
+
+    // Verify authorization
+    const isAuthorized = await checkUserAuthorization(user.email);
+    
+    if (!isAuthorized) {
+      await signOut(auth);
+      showToast("Acceso denegado. Tu correo no está autorizado.", "error");
+      loadingOverlay.classList.add("hidden");
+      return;
+    }
+
     currentUser = user;
     userNameEl.textContent = user.displayName || "Operador";
     userEmailEl.textContent = user.email;
@@ -103,8 +131,17 @@ onAuthStateChanged(auth, (user) => {
     loginSection.classList.add("hidden");
     appShell.classList.remove("hidden");
     
+    // Admin access check
+    if (isAuthorized.role === 'admin') {
+      navAdminBtn.classList.remove("hidden");
+    } else {
+      navAdminBtn.classList.add("hidden");
+      if (activeView === 'admin') switchView('dashboard');
+    }
+
     // Subscribe to Firestore collections
     initRealtimeSubscribers();
+    initAdminSubscribers(isAuthorized.role);
     
     showToast("Sesión iniciada correctamente", "success");
   } else {
@@ -117,6 +154,39 @@ onAuthStateChanged(auth, (user) => {
   loadingOverlay.classList.add("hidden");
   lucide.createIcons();
 });
+
+async function checkUserAuthorization(email) {
+  try {
+    const userDocRef = doc(db, "authorizedUsers", email.toLowerCase());
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      return userDoc.data();
+    }
+    return false;
+  } catch (e) {
+    console.error("Auth check error", e);
+    return false;
+  }
+}
+
+async function seedInitialUsers() {
+  try {
+    const usersSnap = await getDocs(collection(db, "authorizedUsers"));
+    if (usersSnap.empty) {
+      const initialUsers = [
+        { email: "ferreterisapi@gmail.com", role: "admin" },
+        { email: "constructoramonrui@gmail.com", role: "operador" },
+        { email: "jpelaez@mecla.net", role: "operador" }
+      ];
+      for (const u of initialUsers) {
+        await setDoc(doc(db, "authorizedUsers", u.email.toLowerCase()), u);
+      }
+      console.log("Usuarios iniciales registrados.");
+    }
+  } catch(e) {
+    console.error("Error seeding users", e);
+  }
+}
 
 // Google Login
 googleLoginBtn.addEventListener("click", async () => {
@@ -175,6 +245,8 @@ function switchView(viewName) {
     filterProducts();
   } else if (viewName === "movements") {
     filterMovements();
+  } else if (viewName === "admin") {
+    renderUsersTable();
   }
 
   // Rerender Lucide icons
@@ -238,6 +310,7 @@ onAuthStateChanged(auth, (user) => {
   if (!user) {
     if (productsUnsubscribe) productsUnsubscribe();
     if (movementsUnsubscribe) movementsUnsubscribe();
+    if (usersUnsubscribe) usersUnsubscribe();
   }
 });
 
@@ -527,8 +600,10 @@ window.addEventListener("click", (e) => {
 function closeAllModals() {
   modalProduct.classList.add("hidden");
   modalMovement.classList.add("hidden");
+  modalUser.classList.add("hidden");
   formProduct.reset();
   formMovement.reset();
+  if (formUser) formUser.reset();
   movementStockInfo.classList.add("hidden");
 }
 
@@ -851,6 +926,100 @@ function showToast(message, type = "info") {
     }, 300);
   }, 3500);
 }
+
+// ==========================================================================
+// ADMIN PANEL (USER MANAGEMENT)
+// ==========================================================================
+let authorizedUsersList = [];
+let usersUnsubscribe = null;
+
+function initAdminSubscribers(role) {
+  if (role !== 'admin' || usersUnsubscribe) return;
+  const usersQuery = query(collection(db, "authorizedUsers"));
+  usersUnsubscribe = onSnapshot(usersQuery, (snapshot) => {
+    authorizedUsersList = [];
+    snapshot.forEach(doc => {
+      authorizedUsersList.push({ id: doc.id, ...doc.data() });
+    });
+    if(activeView === 'admin') {
+      renderUsersTable();
+    }
+  });
+}
+
+function renderUsersTable() {
+  usersTableBody.innerHTML = "";
+  if (authorizedUsersList.length === 0) {
+    usersEmptyState.classList.remove("hidden");
+  } else {
+    usersEmptyState.classList.add("hidden");
+    authorizedUsersList.forEach(u => {
+      const row = document.createElement("tr");
+      const roleBadge = u.role === 'admin' 
+        ? `<span class="badge badge-sale">Admin</span>` 
+        : `<span class="badge">Operador</span>`;
+      
+      const isSelf = currentUser && u.email === currentUser.email;
+      const deleteBtn = isSelf 
+        ? `<span class="text-muted" style="font-size:0.8rem">Actual</span>`
+        : `<button class="btn-icon text-danger btn-delete-user" data-email="${u.email}" title="Eliminar Acceso"><i data-lucide="trash-2"></i></button>`;
+
+      row.innerHTML = `
+        <td data-label="Correo"><strong>${u.email}</strong></td>
+        <td data-label="Rol">${roleBadge}</td>
+        <td data-label="Acciones">${deleteBtn}</td>
+      `;
+      usersTableBody.appendChild(row);
+    });
+    
+    // Delete events
+    document.querySelectorAll(".btn-delete-user").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        const email = e.currentTarget.getAttribute("data-email");
+        if (confirm(`¿Estás seguro de revocar el acceso a ${email}?`)) {
+          try {
+            await deleteDoc(doc(db, "authorizedUsers", email));
+            showToast("Acceso revocado", "success");
+          } catch(err) {
+            console.error("Delete user error", err);
+            showToast("Error al revocar acceso", "error");
+          }
+        }
+      });
+    });
+    lucide.createIcons();
+  }
+}
+
+// Add User Event Listeners
+btnAddUser.addEventListener("click", () => {
+  formUser.reset();
+  modalUser.classList.remove("hidden");
+  lucide.createIcons();
+});
+
+formUser.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = userEmailInput.value.trim().toLowerCase();
+  const role = userRoleSelect.value;
+  
+  if(!email) return;
+
+  try {
+    loadingOverlay.classList.remove("hidden");
+    await setDoc(doc(db, "authorizedUsers", email), {
+      email: email,
+      role: role
+    });
+    showToast("Usuario autorizado correctamente", "success");
+    closeAllModals();
+  } catch (error) {
+    console.error("Add user error", error);
+    showToast("Error al autorizar usuario", "error");
+  } finally {
+    loadingOverlay.classList.add("hidden");
+  }
+});
 
 // Expose switchView to window for simple dynamic routing
 window.switchView = switchView;
