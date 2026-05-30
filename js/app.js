@@ -761,7 +761,8 @@ formProduct.addEventListener("submit", async (e) => {
   const category = document.getElementById("product-category").value;
   const unit = document.getElementById("product-unit").value.trim();
   const basePrice = parseFloat(document.getElementById("product-base-price").value);
-  const minAlarm = parseInt(document.getElementById("product-min-alarm").value) || 1;
+  const minAlarmInput = parseInt(document.getElementById("product-min-alarm").value);
+  const minAlarm = isNaN(minAlarmInput) ? 1 : minAlarmInput;
   const initialStock = parseInt(document.getElementById("product-initial-stock").value) || 0;
 
   try {
