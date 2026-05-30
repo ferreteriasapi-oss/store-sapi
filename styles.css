@@ -485,6 +485,9 @@ input, select, textarea, button {
   .app-header {
     padding: 0 16px;
   }
+  .hide-on-mobile {
+    display: none;
+  }
 }
 
 /* Main Area */

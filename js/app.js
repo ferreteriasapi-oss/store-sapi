@@ -174,7 +174,7 @@ async function seedInitialUsers() {
     const usersSnap = await getDocs(collection(db, "authorizedUsers"));
     if (usersSnap.empty) {
       const initialUsers = [
-        { email: "ferreterisapi@gmail.com", role: "admin" },
+        { email: "ferreteriasapi@gmail.com", role: "admin" },
         { email: "constructoramonrui@gmail.com", role: "operador" },
         { email: "jpelaez@mecla.net", role: "operador" }
       ];
