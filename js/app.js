@@ -200,19 +200,23 @@ googleLoginBtn.addEventListener("click", async () => {
   }
 });
 
-// Logout
-logoutBtn.addEventListener("click", async (e) => {
-  e.preventDefault();
+// Logout (Global function to prevent any event binding issues)
+window.forceLogout = async function() {
   try {
-    loadingOverlay.classList.remove("hidden");
+    const loader = document.getElementById("loading-overlay");
+    if(loader) loader.classList.remove("hidden");
+    
     await signOut(auth);
-    showToast("Sesión cerrada correctamente", "info");
+    
+    // Force a hard reload to ensure all state is cleared
+    window.location.reload();
   } catch (error) {
     console.error("Logout Error: ", error);
-    showToast("Error al cerrar sesión", "error");
-    loadingOverlay.classList.add("hidden");
+    alert("Hubo un error al cerrar sesión. Revisa tu conexión a internet.");
+    const loader = document.getElementById("loading-overlay");
+    if(loader) loader.classList.add("hidden");
   }
-});
+};
 
 // ==========================================================================
 // ROUTING / VIEW NAVIGATION
