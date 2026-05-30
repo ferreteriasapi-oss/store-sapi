@@ -366,7 +366,8 @@ function filterProducts() {
 }
 
 function renderProductCard(product) {
-  const isAlert = product.stock <= (product.minAlarm !== undefined ? product.minAlarm : 1);
+  const minThreshold = product.minAlarm !== undefined ? product.minAlarm : 1;
+  const isAlert = minThreshold > 0 && product.stock <= minThreshold;
   const card = document.createElement("div");
   card.className = `product-card ${isAlert ? 'stock-alert' : ''}`;
   
@@ -639,7 +640,7 @@ function updateDashboardMetrics() {
   
   productsMap.forEach(product => {
     const minThreshold = product.minAlarm !== undefined ? product.minAlarm : 1;
-    if (product.stock <= minThreshold) {
+    if (minThreshold > 0 && product.stock <= minThreshold) {
       alertsCount++;
       renderDashboardAlertItem(product);
     }
