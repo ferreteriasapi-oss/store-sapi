@@ -4,31 +4,31 @@
 
 /* Design System Tokens */
 :root {
-  /* Color Palette - HSL (Industrial Construction Theme) */
-  --bg-page: hsl(220, 18%, 8%);
-  --bg-card: hsl(220, 18%, 13%);
-  --bg-input: hsl(220, 18%, 18%);
-  --border-color: hsl(220, 15%, 22%);
+  /* Color Palette - HSL (High Contrast Light Theme for Outdoor Use) */
+  --bg-page: hsl(0, 0%, 95%);
+  --bg-card: hsl(0, 0%, 100%);
+  --bg-input: hsl(0, 0%, 100%);
+  --border-color: hsl(220, 20%, 75%);
   
-  --primary: hsl(28, 100%, 53%); /* Safety Orange */
-  --primary-hover: hsl(28, 100%, 48%);
-  --primary-glow: hsla(28, 100%, 53%, 0.15);
+  --primary: hsl(28, 90%, 45%); /* Deep Safety Orange */
+  --primary-hover: hsl(28, 90%, 35%);
+  --primary-glow: hsla(28, 90%, 45%, 0.15);
   
-  --secondary: hsl(42, 100%, 50%); /* Construction Yellow */
-  --secondary-glow: hsla(42, 100%, 50%, 0.15);
+  --secondary: hsl(42, 100%, 35%); /* Deep Construction Yellow */
+  --secondary-glow: hsla(42, 100%, 35%, 0.15);
   
-  --success: hsl(142, 70%, 45%); /* Vibrant Green */
-  --success-glow: hsla(142, 70%, 45%, 0.15);
+  --success: hsl(142, 70%, 35%); /* Deep Green */
+  --success-glow: hsla(142, 70%, 35%, 0.15);
   
-  --alert: hsl(354, 70%, 53%); /* Danger Red */
-  --alert-glow: hsla(354, 70%, 53%, 0.15);
+  --alert: hsl(354, 70%, 45%); /* Deep Red */
+  --alert-glow: hsla(354, 70%, 45%, 0.15);
   
-  --info: hsl(195, 85%, 48%); /* Safety Blue */
-  --info-glow: hsla(195, 85%, 48%, 0.15);
+  --info: hsl(195, 85%, 35%); /* Deep Blue */
+  --info-glow: hsla(195, 85%, 35%, 0.15);
 
-  --text-primary: hsl(220, 20%, 97%);
-  --text-secondary: hsl(220, 10%, 70%);
-  --text-muted: hsl(220, 10%, 50%);
+  --text-primary: hsl(220, 30%, 10%); /* Very Dark Text for contrast */
+  --text-secondary: hsl(220, 20%, 30%);
+  --text-muted: hsl(220, 15%, 45%);
 
   /* Typography */
   --font-display: 'Outfit', 'Inter', sans-serif;
@@ -325,6 +325,8 @@ input, select, textarea, button {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  width: 100%;
+  flex: 1;
   padding: 20px;
   background: radial-gradient(circle at top right, hsla(28, 100%, 53%, 0.05), transparent 50%),
               radial-gradient(circle at bottom left, hsla(195, 85%, 48%, 0.03), transparent 50%),
@@ -365,7 +367,7 @@ input, select, textarea, button {
 .login-logo h1 {
   font-size: 2.2rem;
   color: var(--text-primary);
-  background: linear-gradient(135deg, white, var(--text-secondary));
+  background: linear-gradient(135deg, var(--primary), var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -441,7 +443,7 @@ input, select, textarea, button {
 
 .brand-title {
   font-size: 1.4rem;
-  background: linear-gradient(135deg, white, var(--text-secondary));
+  background: linear-gradient(135deg, var(--primary), var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -573,7 +575,7 @@ input, select, textarea, button {
 }
 
 .metric-card.premium-gradient {
-  background: linear-gradient(135deg, hsl(220, 18%, 13%), hsl(220, 18%, 9%));
+  background: linear-gradient(135deg, hsl(0, 0%, 100%), hsl(0, 0%, 96%));
   border-left: 4px solid var(--primary);
 }
 
