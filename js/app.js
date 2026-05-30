@@ -380,18 +380,18 @@ function renderProductCard(product) {
       </div>
     </div>
     <div class="product-footer-metrics">
-      <span>Precio Base: <strong>$${product.basePrice.toFixed(2)}</strong></span>
+      <span>Precio Base: <strong>S/${product.basePrice.toFixed(2)}</strong></span>
       <span>Alerta Min: <strong>${product.minAlarm !== undefined ? product.minAlarm : 1}</strong></span>
     </div>
     <div class="product-actions">
       <button class="btn btn-secondary btn-edit-product" data-id="${product.id}">
         <i data-lucide="edit-3"></i> Editar
       </button>
-      <button class="btn btn-secondary btn-view-movements" data-id="${product.id}" style="padding: 10px;">
-        <i data-lucide="bar-chart-3"></i> Movimientos
-      </button>
-      <button class="btn btn-secondary btn-action-entry" data-id="${product.id}" style="padding: 10px;">
+      <button class="btn btn-secondary btn-action-entry" data-id="${product.id}">
         <i data-lucide="plus"></i> Ingreso
+      </button>
+      <button class="btn btn-secondary btn-view-movements" data-id="${product.id}">
+        <i data-lucide="bar-chart-3"></i> Movimientos
       </button>
     </div>
   `;
@@ -481,7 +481,7 @@ function openProductMovementsModal(productId) {
 
       const opName = m.operator ? m.operator.name : 'Desconocido';
       const detail = m.details && m.details.client ? ` · ${m.details.client}` : '';
-      const priceStr = m.price ? `$${(m.quantity * m.price).toFixed(2)}` : '';
+      const priceStr = m.price ? `S/${(m.quantity * m.price).toFixed(2)}` : '';
 
       item.innerHTML = `
         <div class="pm-movement-icon ${iconClass}">
@@ -581,8 +581,8 @@ function renderMovementRow(movement, product) {
 
   // Format Price & total
   const hasPrice = movement.type === "sale" || movement.type === "entry";
-  const unitPrice = hasPrice && movement.price ? `$${movement.price.toFixed(2)}` : "-";
-  const totalPrice = hasPrice && movement.price ? `$${(movement.quantity * movement.price).toFixed(2)}` : "-";
+  const unitPrice = hasPrice && movement.price ? `S/${movement.price.toFixed(2)}` : "-";
+  const totalPrice = hasPrice && movement.price ? `S/${(movement.quantity * movement.price).toFixed(2)}` : "-";
 
   // Operator email tooltip or label
   const opLabel = movement.operator 
@@ -672,7 +672,7 @@ function updateDashboardMetrics() {
     }
   });
 
-  metricMonthlySales.textContent = `$${monthlySalesTotal.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  metricMonthlySales.textContent = `S/${monthlySalesTotal.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function renderDashboardAlertItem(product) {
