@@ -201,16 +201,16 @@ googleLoginBtn.addEventListener("click", async () => {
 });
 
 // Logout
-logoutBtn.addEventListener("click", async () => {
+logoutBtn.addEventListener("click", async (e) => {
+  e.preventDefault();
   try {
-    if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
-      loadingOverlay.classList.remove("hidden");
-      await signOut(auth);
-      showToast("Sesión cerrada", "info");
-    }
+    loadingOverlay.classList.remove("hidden");
+    await signOut(auth);
+    showToast("Sesión cerrada correctamente", "info");
   } catch (error) {
     console.error("Logout Error: ", error);
     showToast("Error al cerrar sesión", "error");
+    loadingOverlay.classList.add("hidden");
   }
 });
 
